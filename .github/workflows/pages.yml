@@ -34,6 +34,7 @@ jobs:
           mkdir -p _site/logo_para_colocar_nas_imagens_geradas/logo_polisat
           cp index.html _site/index.html
           cp posts/exemplo-mes-doar.png _site/posts/exemplo-mes-doar.png
+          cp posts/exemplo-impacto-projetos.png _site/posts/exemplo-impacto-projetos.png
           cp logo_para_colocar_nas_imagens_geradas/logo_adp/logo-amigos-da-poli.svg _site/logo_para_colocar_nas_imagens_geradas/logo_adp/logo-amigos-da-poli.svg
           cp logo_para_colocar_nas_imagens_geradas/logo_polisat/logo_branco_svg.svg _site/logo_para_colocar_nas_imagens_geradas/logo_polisat/logo_branco_svg.svg
 

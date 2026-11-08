@@ -32,8 +32,8 @@ def prepare_logo(path, size):
     return logo
 
 
-def main():
-    random.seed(19)
+def create_background(seed):
+    random.seed(seed)
     w, h = 1080, 1350
     img = Image.new("RGBA", (w, h), (8, 10, 22, 255))
     pix = img.load()
@@ -56,6 +56,25 @@ def main():
         d.ellipse((x-radius, y-radius, x+radius, y+radius), fill=color)
     for x, y, radius, color in ((150, 175, 4, (92, 190, 255, 255)), (906, 235, 4, (190, 122, 255, 255)), (846, 698, 3, (131, 173, 255, 255)), (215, 827, 3, (207, 151, 255, 255))):
         d.ellipse((x-radius, y-radius, x+radius, y+radius), fill=color)
+    return img
+
+
+def draw_campaign_footer(img):
+    d = ImageDraw.Draw(img)
+    d.text((84, 866), "LINK PARA DOAÇÃO", font=font(18, True), fill=(190, 194, 218, 255))
+    d.rounded_rectangle((84, 899, 996, 1044), radius=14, fill=(248, 248, 255, 255), outline=(174, 104, 255, 255), width=3)
+    d.line((84, 1090, 996, 1090), fill=(92, 101, 145, 210), width=2)
+
+    polisat = prepare_logo(POLISAT_LOGO, (245, 105))
+    adp = prepare_logo(ADP_LOGO, (245, 105))
+    img.alpha_composite(polisat, (84, 1120 + (105 - polisat.height) // 2))
+    img.alpha_composite(adp, (996 - adp.width, 1120 + (105 - adp.height) // 2))
+    centered_text(d, "MÊS DO DOAR 2026", 1159, font(17, True), (155, 162, 193, 255))
+
+
+def main():
+    img = create_background(19)
+    d = ImageDraw.Draw(img)
 
     centered_text(d, "CAMPANHA DE DOAÇÃO", 93, font(22, True), (186, 190, 222, 255))
     centered_text(d, "MÊS DO", 177, font(83, True), (248, 248, 255, 255))
@@ -68,17 +87,39 @@ def main():
     d.rounded_rectangle((238, 771, 842, 829), radius=16, fill=(20, 39, 82, 245), outline=(85, 133, 255, 255), width=2)
     centered_text(d, "APOIE A COMUNIDADE POLITÉCNICA", 788, font(19, True), (208, 222, 255, 255))
 
-    d.text((84, 866), "LINK PARA DOAÇÃO", font=font(18, True), fill=(190, 194, 218, 255))
-    d.rounded_rectangle((84, 899, 996, 1044), radius=14, fill=(248, 248, 255, 255), outline=(174, 104, 255, 255), width=3)
-    d.line((84, 1090, 996, 1090), fill=(92, 101, 145, 210), width=2)
-
-    polisat = prepare_logo(POLISAT_LOGO, (245, 105))
-    adp = prepare_logo(ADP_LOGO, (245, 105))
-    img.alpha_composite(polisat, (84, 1120 + (105 - polisat.height) // 2))
-    img.alpha_composite(adp, (996 - adp.width, 1120 + (105 - adp.height) // 2))
-    centered_text(d, "MÊS DO DOAR 2026", 1159, font(17, True), (155, 162, 193, 255))
+    draw_campaign_footer(img)
     img.convert("RGB").save(OUT, quality=95)
+
+
+def generate_project_impact():
+    output = ROOT / "posts" / "exemplo-impacto-projetos.png"
+    img = create_background(27)
+    d = ImageDraw.Draw(img)
+
+    centered_text(d, "O QUE UMA DOAÇÃO PODE FAZER?", 89, font(22, True), (186, 190, 222, 255))
+    centered_text(d, "IDEIAS QUE", 157, font(86, True), (248, 248, 255, 255))
+    centered_text(d, "VIRAM PROJETOS.", 245, font(83, True), (76, 158, 255, 255), 3, (185, 102, 255, 255))
+    d.line((160, 370, 920, 370), fill=(130, 105, 255, 190), width=2)
+    centered_text(d, "O Edital de Projetos apoia iniciativas", 405, font(29, True), (248, 248, 255, 255))
+    centered_text(d, "da comunidade politécnica.", 445, font(29, True), (188, 126, 255, 255))
+    centered_text(d, "Sua contribuição ajuda a tirar ideias do papel.", 506, font(23), (225, 228, 245, 255))
+
+    cards = (
+        (84, "01", "IDEIA", "Alunos e docentes", (77, 156, 255, 255)),
+        (401, "02", "APOIO", "Edital de Projetos", (157, 111, 255, 255)),
+        (718, "03", "IMPACTO", "Engenharia que transforma", (87, 190, 255, 255)),
+    )
+    for x, number, title, description, color in cards:
+        d.rounded_rectangle((x, 599, x + 278, 784), radius=17, fill=(11, 14, 34, 235), outline=color, width=3)
+        d.ellipse((x + 22, 621, x + 80, 679), fill=(23, 33, 75, 255), outline=color, width=2)
+        d.text((x + 35, 633), number, font=font(21, True), fill=(238, 239, 255, 255))
+        d.text((x + 20, 696), title, font=font(22, True), fill=color)
+        d.text((x + 20, 738), description, font=font(16, True), fill=(222, 225, 242, 255))
+
+    draw_campaign_footer(img)
+    img.convert("RGB").save(output, quality=95)
 
 
 if __name__ == "__main__":
     main()
+    generate_project_impact()
