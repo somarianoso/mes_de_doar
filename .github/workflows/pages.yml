@@ -30,8 +30,12 @@ jobs:
       - name: Prepare static site
         run: |
           mkdir -p _site/posts
+          mkdir -p _site/logo_para_colocar_nas_imagens_geradas/logo_adp
+          mkdir -p _site/logo_para_colocar_nas_imagens_geradas/logo_polisat
           cp index.html _site/index.html
           cp posts/exemplo-mes-doar.png _site/posts/exemplo-mes-doar.png
+          cp logo_para_colocar_nas_imagens_geradas/logo_adp/logo-amigos-da-poli.svg _site/logo_para_colocar_nas_imagens_geradas/logo_adp/logo-amigos-da-poli.svg
+          cp logo_para_colocar_nas_imagens_geradas/logo_polisat/logo_branco_svg.svg _site/logo_para_colocar_nas_imagens_geradas/logo_polisat/logo_branco_svg.svg
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4

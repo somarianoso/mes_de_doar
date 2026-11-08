@@ -8,12 +8,12 @@ O workflow em `.github/workflows/pages.yml` publica o site sempre que há um pus
 
 O endereço esperado para este repositório é `https://somarianoso.github.io/mes_de_doar/`.
 
-O workflow envia ao Pages apenas `index.html` e a arte de exemplo. As imagens base e outros arquivos locais não são incluídos no site.
+O workflow envia ao Pages a página, a arte de exemplo e as duas logos em SVG usadas pelo editor. As imagens base e os demais arquivos locais não são incluídos no site.
 
 ## Como usar
 
 - Escolha um post no calendário.
-- No exemplo gerado, use **Editar imagem** para trocar a imagem, ajustar zoom, brilho, contraste e saturação ou inserir texto.
+- No exemplo gerado, use **Editar imagem** para trocar a imagem, arrastá-la para reenquadrar, ajustar zoom, brilho, contraste e saturação ou inserir e reposicionar texto. Ao trocar a imagem, as logos da PoliSat e do Amigos da Poli e o espaço vazio para o link de doação são aplicados automaticamente.
 - **Salvar edição** guarda a versão editada neste navegador. Use **Baixar imagem** para obter o PNG final e publicar no Instagram manualmente.
 - **Copiar legenda** copia o texto sugerido.
 
