@@ -8,6 +8,33 @@ Central de conteúdo da campanha **Mês do Doar** do PoliSat com a Amigos da Pol
 
 Toda arte inclui, sempre, a logo do PoliSat, a logo da Amigos da Poli, o link de doação **[doa.re/RzAT](https://doa.re/RzAT)** e um QR code para esse link.
 
+## Rodar no seu computador
+
+Precisa do [Node.js](https://nodejs.org/) 18 ou mais recente. Não é preciso instalar mais nada para abrir o site.
+
+Na pasta do projeto, rode:
+
+```bash
+npm run dev
+```
+
+Depois abra **http://localhost:4173** no navegador. Para parar, aperte `Ctrl + C` no terminal.
+
+> Não abra o `index.html` com dois cliques: em páginas `file://` o navegador bloqueia o download do PNG. Use sempre `npm run dev`.
+
+Para **regerar os PNGs** da pasta `posts/` (só se você mudou `assets/js/posts.js` e quer atualizar as imagens salvas no repositório), rode uma vez:
+
+```bash
+npm install
+npx playwright install chromium
+```
+
+e depois, sempre que quiser exportar:
+
+```bash
+npm run exportar
+```
+
 ## Como usar
 
 1. Escolha um dia no calendário. O dia de hoje aparece marcado.
@@ -38,16 +65,7 @@ Para mudar o conteúdo de forma permanente para todo mundo, edite `assets/js/pos
 
 ## Desenvolvimento
 
-Requer Node 18 ou mais recente.
-
-```bash
-npm run dev          # prévia local em http://localhost:4173
-npm install          # instala o Playwright (só necessário para exportar)
-npx playwright install chromium
-npm run exportar     # gera posts/*.png e posts/MENSAGENS.md
-```
-
-Abra o site por um servidor (`npm run dev`), não pelo arquivo direto: o navegador bloqueia a geração do PNG em páginas `file://`.
+Os comandos estão em [Rodar no seu computador](#rodar-no-seu-computador). `npm run dev` usa só o Node, sem dependências; o Playwright só é necessário para `npm run exportar`, que gera `posts/*.png` e `posts/MENSAGENS.md`.
 
 ## Publicação no GitHub Pages
 
