@@ -28,8 +28,8 @@ As artes não são imagens fixas: cada post é descrito por dados e desenhado em
 | `assets/js/render.js` | Renderizador e os modelos: **Destaque**, **Número em destaque**, **Lista (estilo cronograma)**, **Janela**, **Foto polaroid** e **Mosaico de fotos**. Desenha também a moldura fixa (logos, link e QR code). |
 | `assets/js/app.js` | Interface: calendário, prévia, editor, mensagens e download. |
 | `assets/fotos/` | Fotos da equipe recortadas de `imagens_base/`. |
-| `assets/logos/` | Logos usadas nas artes (cópias das originais em `logo_para_colocar_nas_imagens_geradas/`). |
-| `assets/fonts/` | Poppins (licença OFL), parecida com a tipografia das artes base. |
+| `assets/logos/` | Logos usadas nas artes (cópias das originais em `logo_para_colocar_nas_imagens_geradas/`) e as versões `*-escuro.svg`, usadas na interface em tema claro. |
+| `assets/fonts/` | Poppins (licença OFL), parecida com a tipografia das artes base, e Source Serif 4 (OFL), usada nos títulos da interface. |
 | `posts/` | PNGs exportados e `MENSAGENS.md` com todos os textos. |
 
 O visual segue `imagens_base/`: fundo preto estrelado com nebulosa azul e roxa, títulos azul PoliSat com contorno ciano e magenta, destaques em lilás e roxo, caixas brancas com etiquetas roxas e CubeSats decorativos. Os textos se ajustam sozinhos ao espaço disponível, então editar não quebra o layout.

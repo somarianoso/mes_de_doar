@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#05050b">
+  <meta name="theme-color" content="#faf9f5" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#262624" media="(prefers-color-scheme: dark)">
   <title>Mês do Doar · PoliSat</title>
   <meta name="description" content="Artes e mensagens prontas da campanha Mês do Doar do PoliSat com a Amigos da Poli.">
   <link rel="stylesheet" href="assets/css/app.css">
@@ -12,9 +13,9 @@
   <main class="shell">
     <header class="top">
       <div class="brand">
-        <img src="assets/logos/polisat-branco.svg" alt="PoliSat" class="brand-logo">
+        <picture><source srcset="assets/logos/polisat-branco.svg" media="(prefers-color-scheme: dark)"><img src="assets/logos/polisat-escuro.svg" alt="PoliSat" class="brand-logo"></picture>
         <span class="brand-x" aria-hidden="true">×</span>
-        <img src="assets/logos/adp.svg" alt="Amigos da Poli" class="brand-logo adp">
+        <picture><source srcset="assets/logos/adp.svg" media="(prefers-color-scheme: dark)"><img src="assets/logos/adp-escuro.svg" alt="Amigos da Poli" class="brand-logo adp"></picture>
       </div>
       <button class="link-pill" id="copy-link" type="button" title="Copiar link de doação">
         <span class="link-pill-label">Link de doação</span>
@@ -25,8 +26,8 @@
 
     <section class="hero">
       <div>
-        <p class="eyebrow">Mês do Doar 2026 · 09/11 → 01/12</p>
-        <h1><span class="title-outline">Artes e mensagens</span><br>prontas para divulgar</h1>
+        <p class="eyebrow">Mês do Doar 2026 · 09/11 a 01/12</p>
+        <h1>Artes e mensagens <span class="title-outline">prontas</span><br>para divulgar</h1>
         <p class="lead">Escolha o dia, baixe a arte para o Instagram e mande a mensagem pronta no WhatsApp. Tudo pode ser editado aqui mesmo.</p>
       </div>
       <div class="countdown" id="countdown">

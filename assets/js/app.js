@@ -533,7 +533,25 @@
     return today >= 0 ? today : posts.length - 1;
   }
 
+  // Serifa dos títulos da interface. Carregada via FontFace pelo mesmo motivo da Poppins
+  // (ver render.js): @font-face no CSS não carrega de forma confiável em todos os navegadores.
+  function loadUiSerif() {
+    if (!document.fonts || typeof FontFace !== 'function') return;
+    [['normal', 'Regular'], ['italic', 'Italic']].forEach(async ([style, name]) => {
+      try {
+        const res = await fetch('assets/fonts/SourceSerif4-' + name + '.woff2');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const face = new FontFace('Source Serif 4', await res.arrayBuffer(), { style, weight: '400', display: 'swap' });
+        await face.load();
+        document.fonts.add(face);
+      } catch (e) {
+        console.warn('Fonte Source Serif 4 indisponível; usando serifa do sistema.', e);
+      }
+    });
+  }
+
   async function init() {
+    loadUiSerif();
     bind();
     buildStrip();
     updateCountdown();
