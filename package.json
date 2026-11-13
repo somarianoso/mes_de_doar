@@ -5,9 +5,11 @@
   "description": "Central de artes e mensagens do Mês do Doar · PoliSat × Amigos da Poli",
   "scripts": {
     "dev": "node scripts/servidor.mjs",
-    "exportar": "node scripts/exportar_posts.mjs"
+    "exportar": "node scripts/exportar_posts.mjs",
+    "exportar:story": "node scripts/exportar_story.mjs"
   },
   "devDependencies": {
+    "ffmpeg-static": "^5.2.0",
     "playwright": "1.49.1"
   }
 }

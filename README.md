@@ -35,6 +35,14 @@ e depois, sempre que quiser exportar:
 npm run exportar
 ```
 
+O stories animado "Batemos a meta!" (`stories/batemos-a-meta.html`, usa `meta-batida.png`) vira vídeo com:
+
+```bash
+npm run exportar:story
+```
+
+que gera `posts/2026-11-13-batemos-a-meta-stories.mp4` (1080 × 1920, 9 s) e um PNG do quadro final.
+
 ## Como usar
 
 1. Escolha um dia no calendário. O dia de hoje aparece marcado.

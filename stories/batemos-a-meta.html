@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Batemos a meta · Stories</title>
+<style>
+  @font-face { font-family: Poppins; font-weight: 600; src: url(../assets/fonts/Poppins-SemiBold.ttf) format('truetype'); }
+  @font-face { font-family: Poppins; font-weight: 700; src: url(../assets/fonts/Poppins-Bold.ttf) format('truetype'); }
+  @font-face { font-family: Poppins; font-weight: 800; src: url(../assets/fonts/Poppins-ExtraBold.ttf) format('truetype'); }
+  html, body { margin: 0; height: 100%; background: #040409; }
+  body { display: grid; place-items: center; }
+  canvas { height: 100vh; max-width: 100vw; aspect-ratio: 9 / 16; object-fit: contain; cursor: pointer; display: block; }
+</style>
+</head>
+<body>
+<canvas id="story" width="1080" height="1920" title="Clique para reiniciar"></canvas>
+<script src="../assets/js/vendor/qrcode.js"></script>
+<script>
+/*
+ * Stories animado "Batemos a meta!" · Mês do Doar 2026 · PoliSat × Amigos da Poli.
+ * 1080 × 1920, 9 s. frame(t) é determinístico: o mesmo t sempre gera o mesmo quadro,
+ * por isso scripts/exportar_story.mjs consegue gravar o vídeo quadro a quadro.
+ */
+(function () {
+  'use strict';
+
+  const W = 1080, H = 1920, D = 9;
+  const FONT = 'Poppins, "Segoe UI", Arial, sans-serif';
+  const LINK = 'doa.re/RzAT';
+  const C = {
+    black: '#040409', white: '#ffffff', paper: '#f4f5f7', ink: '#101018', inkSoft: '#575b70',
+    blue: '#13408f', blueBright: '#2f6bff', cyan: '#2fd8ff', magenta: '#d84bff',
+    purple: '#a95fd0', purpleDeep: '#7d3db0', lilac: '#e2b0ff', gold: '#ffd34d',
+  };
+
+  const canvas = document.getElementById('story');
+  const ctx = canvas.getContext('2d');
+  const font = (w, s) => `${w} ${Math.round(s)}px ${FONT}`;
+  const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+  const prog = (t, start, dur) => clamp((t - start) / dur);
+  const easeOut = (x) => 1 - Math.pow(1 - x, 3);
+  const easeInOut = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+  const backOut = (x) => { const c1 = 1.9, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+
+  function rng(seed) {
+    let a = seed >>> 0;
+    return () => {
+      a = (a + 0x6d2b79f5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function loadImage(src) {
+    return new Promise((ok, fail) => { const i = new Image(); i.onload = () => ok(i); i.onerror = fail; i.src = src; });
+  }
+
+  // ------------------------------------------------------------ fundo (pré-renderizado)
+
+  const rand = rng(20261113);
+  const bg = document.createElement('canvas');
+  bg.width = W; bg.height = H;
+  (function drawBackground() {
+    const b = bg.getContext('2d');
+    b.fillStyle = C.black;
+    b.fillRect(0, 0, W, H);
+    const glow = (x, y, r, rgb, a) => {
+      const g = b.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, `rgba(${rgb},${a})`);
+      g.addColorStop(1, `rgba(${rgb},0)`);
+      b.fillStyle = g;
+      b.fillRect(x - r, y - r, r * 2, r * 2);
+    };
+    glow(860, 420, 640, '125,61,176', 0.42);
+    glow(160, 1100, 680, '19,64,143', 0.5);
+    glow(820, 1500, 520, '216,75,255', 0.16);
+    glow(420, 640, 360, '47,107,255', 0.16);
+    for (let i = 0; i < 40; i++) glow(rand() * W, rand() * H, 80 + rand() * 160, '180,140,255', 0.025 + rand() * 0.03);
+    const tints = ['255,255,255', '214,228,255', '226,200,255', '170,230,255'];
+    for (let i = 0; i < 1300; i++) {
+      const r = rand() < 0.88 ? 0.5 + rand() * 0.9 : 1.3 + rand() * 1.1;
+      b.fillStyle = `rgba(${tints[(rand() * tints.length) | 0]},${0.35 + rand() * 0.6})`;
+      b.beginPath();
+      b.arc(rand() * W, rand() * H, r, 0, Math.PI * 2);
+      b.fill();
+    }
+  })();
+
+  // Estrelas em cruz que piscam.
+  const twinkles = Array.from({ length: 22 }, () => ({ x: rand() * W, y: rand() * H, s: 7 + rand() * 13, ph: rand() * 6.28, sp: 1.5 + rand() * 2.5 }));
+  function drawTwinkles(t) {
+    for (const s of twinkles) {
+      const a = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(t * s.sp + s.ph));
+      const sz = s.s * (0.75 + 0.25 * a);
+      ctx.save();
+      ctx.globalAlpha = a;
+      const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, sz * 2.2);
+      g.addColorStop(0, 'rgba(120,225,255,.55)');
+      g.addColorStop(1, 'rgba(120,225,255,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(s.x - sz * 2.2, s.y - sz * 2.2, sz * 4.4, sz * 4.4);
+      ctx.fillStyle = 'rgba(235,250,255,.95)';
+      ctx.fillRect(s.x - sz, s.y - 0.7, sz * 2, 1.4);
+      ctx.fillRect(s.x - 0.7, s.y - sz, 1.4, sz * 2);
+      ctx.restore();
+    }
+  }
+
+  // ------------------------------------------------------------ CubeSat
+
+  function drawCubeSat(x, y, e, angle) {
+    const k = 0.866;
+    const P = { t: [0, -e], r: [k * e, -0.5 * e], c: [0, 0], l: [-k * e, -0.5 * e], b: [0, e], rb: [k * e, 0.5 * e], lb: [-k * e, 0.5 * e] };
+    const lerp = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+    const quad = (p0, p1, p2, p3) => { ctx.beginPath(); ctx.moveTo(...p0); ctx.lineTo(...p1); ctx.lineTo(...p2); ctx.lineTo(...p3); ctx.closePath(); };
+    const face = (p0, p1, p2, p3, base, cell, cols, rows) => {
+      quad(p0, p1, p2, p3); ctx.fillStyle = base; ctx.fill();
+      const pad = 0.08;
+      for (let i = 0; i < cols; i++) for (let j = 0; j < rows; j++) {
+        const u0 = pad + (i / cols) * (1 - 2 * pad) + 0.012, u1 = pad + ((i + 1) / cols) * (1 - 2 * pad) - 0.012;
+        const v0 = pad + (j / rows) * (1 - 2 * pad) + 0.012, v1 = pad + ((j + 1) / rows) * (1 - 2 * pad) - 0.012;
+        const at = (u, v) => lerp(lerp(p0, p1, u), lerp(p3, p2, u), v);
+        quad(at(u0, v0), at(u1, v0), at(u1, v1), at(u0, v1)); ctx.fillStyle = cell; ctx.fill();
+      }
+      quad(p0, p1, p2, p3); ctx.strokeStyle = 'rgba(200,214,240,.85)'; ctx.lineWidth = e * 0.035; ctx.stroke();
+    };
+    ctx.save();
+    ctx.translate(x, y); ctx.rotate(angle);
+    ctx.shadowColor = 'rgba(47,107,255,.45)'; ctx.shadowBlur = e * 0.6;
+    ctx.strokeStyle = 'rgba(210,220,240,.8)'; ctx.lineWidth = e * 0.025;
+    ctx.beginPath();
+    ctx.moveTo(...P.r); ctx.lineTo(P.r[0] + e * 1.1, P.r[1] - e * 0.55);
+    ctx.moveTo(...P.lb); ctx.lineTo(P.lb[0] - e * 1.0, P.lb[1] + e * 0.5);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    face(P.l, P.c, P.b, P.lb, '#141c3a', '#1d3c8a', 2, 3);
+    face(P.c, P.r, P.rb, P.b, '#18234a', '#2550a8', 2, 3);
+    face(P.t, P.r, P.c, P.l, '#8a9cc4', '#a9b8d8', 2, 2);
+    ctx.restore();
+  }
+
+  // ------------------------------------------------------------ texto com *destaques*
+
+  function richLine(text, x, y, size, weight, { color = C.white, hi = C.lilac, align = 'center' } = {}) {
+    const parts = String(text).split('*');
+    ctx.font = font(weight, size);
+    const total = parts.reduce((s, p) => s + ctx.measureText(p).width, 0);
+    let cx = align === 'center' ? x - total / 2 : x;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    parts.forEach((p, i) => {
+      ctx.fillStyle = i % 2 ? hi : color;
+      ctx.fillText(p, cx, y);
+      cx += ctx.measureText(p).width;
+    });
+  }
+
+  // ------------------------------------------------------------ confetes
+
+  const CONF_COLORS = [C.cyan, C.magenta, C.purple, C.lilac, C.blueBright, C.white, C.gold, C.gold];
+  const crand = rng(777);
+  const confetti = [];
+  const BURST = 1.85;
+  // Canhões nos cantos inferiores e uma explosão central atrás do título.
+  for (let i = 0; i < 150; i++) {
+    const left = i % 2 === 0;
+    const ang = (left ? -1 : 1) * (0.25 + crand() * 0.55) - Math.PI / 2;
+    const sp = 1500 + crand() * 1500;
+    confetti.push({ t0: BURST + crand() * 0.12, x: left ? -20 : W + 20, y: 1500 + crand() * 120, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp, ...shape() });
+  }
+  for (let i = 0; i < 90; i++) {
+    const ang = crand() * Math.PI * 2;
+    const sp = 500 + crand() * 1100;
+    confetti.push({ t0: BURST + 0.05, x: 540, y: 620, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp - 350, ...shape() });
+  }
+  // Chuva contínua de cima até o fim.
+  for (let i = 0; i < 130; i++) {
+    confetti.push({ t0: 2.1 + crand() * (D - 2.6), x: crand() * W, y: -40 - crand() * 60, vx: (crand() - 0.5) * 140, vy: 60 + crand() * 120, ...shape() });
+  }
+  function shape() {
+    const r = crand();
+    return {
+      kind: r < 0.62 ? 'rect' : r < 0.86 ? 'circle' : 'star',
+      color: CONF_COLORS[(crand() * CONF_COLORS.length) | 0],
+      size: 9 + crand() * 11,
+      k: 1.6 + crand() * 1.2,           // arrasto
+      term: 260 + crand() * 160,        // velocidade terminal de queda
+      spin: (crand() - 0.5) * 14,
+      flip: 4 + crand() * 8,
+      sway: 18 + crand() * 40,
+      swayF: 1.5 + crand() * 2.5,
+      ph: crand() * 6.28,
+    };
+  }
+  function drawStar(r) {
+    ctx.beginPath();
+    for (let i = 0; i < 10; i++) {
+      const a = (i / 10) * Math.PI * 2 - Math.PI / 2;
+      const rr = i % 2 ? r * 0.45 : r;
+      ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr);
+    }
+    ctx.closePath();
+    ctx.fill();
+  }
+  function drawConfetti(t) {
+    for (const p of confetti) {
+      const tau = t - p.t0;
+      if (tau < 0) continue;
+      const e = (1 - Math.exp(-p.k * tau)) / p.k;
+      const x = p.x + p.vx * e + Math.sin(tau * p.swayF + p.ph) * p.sway * Math.min(1, tau);
+      const y = p.y + p.vy * e + p.term * (tau - e);
+      if (y > H + 40 || x < -60 || x > W + 60) continue;
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(p.ph + tau * p.spin);
+      ctx.fillStyle = p.color;
+      if (p.kind === 'rect') {
+        ctx.scale(1, Math.cos(tau * p.flip + p.ph));
+        ctx.fillRect(-p.size / 2, -p.size * 0.28, p.size, p.size * 0.56);
+      } else if (p.kind === 'circle') {
+        ctx.beginPath(); ctx.arc(0, 0, p.size * 0.32, 0, Math.PI * 2); ctx.fill();
+      } else {
+        drawStar(p.size * 0.6);
+      }
+      ctx.restore();
+    }
+  }
+
+  // ------------------------------------------------------------ cenas
+
+  let IMG = {};
+  let QR = null;
+
+  function drawHeader(t) {
+    const a = easeOut(prog(t, 0, 0.6));
+    ctx.save();
+    ctx.globalAlpha = a;
+    ctx.translate(0, (1 - a) * -30);
+    ctx.font = font(800, 40);
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    ctx.shadowColor = '#b05cff';
+    ctx.shadowBlur = 24;
+    ctx.fillStyle = '#e8bcff';
+    ctx.fillText('MÊS DO DOAR 2026', 80, 290);
+    ctx.shadowBlur = 8;
+    ctx.fillText('MÊS DO DOAR 2026', 80, 290);
+    ctx.shadowBlur = 0;
+    if (IMG.polisat) ctx.drawImage(IMG.polisat, 840, 222, 160, 160 * (IMG.polisat.height / IMG.polisat.width));
+    ctx.restore();
+  }
+
+  function drawBar(t) {
+    const a = easeOut(prog(t, 0.15, 0.5));
+    const p = easeInOut(prog(t, 0.45, 1.35)) * 1.028; // 1.028 de 1.000 pontos
+    const done = t >= BURST;
+    const x = 100, y = 372, w = 880, h = 52;
+    ctx.save();
+    ctx.globalAlpha = a;
+    ctx.font = font(800, 26);
+    ctx.textBaseline = 'alphabetic';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = 'rgba(255,255,255,.85)';
+    ctx.fillText(`META: ${Math.round(p * 1000).toLocaleString('pt-BR')} / 1.000 PONTOS`, x, y - 18);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = done ? C.gold : C.lilac;
+    ctx.fillText(`${(p * 100).toFixed(1).replace('.', ',')}%`, x + w, y - 18);
+
+    roundRect(x, y, w, h, h / 2);
+    ctx.fillStyle = 'rgba(255,255,255,.1)';
+    ctx.fill();
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = 'rgba(226,176,255,.45)';
+    ctx.stroke();
+
+    if (p > 0) {
+      const fw = Math.max(h, w * Math.min(1, p));
+      ctx.save();
+      roundRect(x, y, fw, h, h / 2);
+      ctx.clip();
+      const g = ctx.createLinearGradient(x, 0, x + w, 0);
+      g.addColorStop(0, C.blueBright);
+      g.addColorStop(0.55, C.purple);
+      g.addColorStop(1, C.magenta);
+      ctx.fillStyle = g;
+      ctx.fillRect(x, y, fw, h);
+      // listras correndo
+      ctx.globalAlpha = 0.18;
+      ctx.fillStyle = '#fff';
+      const off = (t * 120) % 60;
+      for (let sx = x - 60 + off; sx < x + fw; sx += 60) {
+        ctx.beginPath();
+        ctx.moveTo(sx, y + h); ctx.lineTo(sx + 26, y + h); ctx.lineTo(sx + 26 + h * 0.6, y); ctx.lineTo(sx + h * 0.6, y);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+    // brilho ao completar
+    if (done) {
+      const f = prog(t, BURST, 0.9);
+      ctx.save();
+      ctx.globalAlpha = (1 - f) * 0.9;
+      ctx.shadowColor = C.cyan;
+      ctx.shadowBlur = 60;
+      roundRect(x, y, w, h, h / 2);
+      ctx.lineWidth = 6;
+      ctx.strokeStyle = C.cyan;
+      ctx.stroke();
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+
+  function drawTitle(t) {
+    const lines = ['BATEMOS', 'A META!'];
+    const size = 172;
+    lines.forEach((line, i) => {
+      const f = prog(t, BURST - 0.05 + i * 0.16, 0.6);
+      if (f <= 0) return;
+      const s = 0.3 + 0.7 * backOut(f);
+      const by = 640 + i * size * 1.0;
+      const cx = W / 2;
+      const wob = t > 3 ? Math.sin((t - 3) * 2.2 + i) * 0.012 : 0;
+      ctx.save();
+      ctx.globalAlpha = clamp(f * 2.5);
+      ctx.translate(cx, by - size * 0.35);
+      ctx.scale(s, s);
+      ctx.rotate(wob);
+      ctx.translate(-cx, -(by - size * 0.35));
+      ctx.font = font(800, size);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'alphabetic';
+      ctx.lineJoin = 'round';
+      ctx.save();
+      ctx.shadowColor = 'rgba(216,75,255,.7)';
+      ctx.shadowBlur = size * 0.3;
+      ctx.lineWidth = size * 0.085;
+      ctx.strokeStyle = C.magenta;
+      ctx.strokeText(line, cx + size * 0.028, by + size * 0.024);
+      ctx.restore();
+      ctx.lineWidth = size * 0.06;
+      ctx.strokeStyle = C.cyan;
+      ctx.strokeText(line, cx - size * 0.014, by - size * 0.012);
+      const g = ctx.createLinearGradient(0, by - size * 0.75, 0, by);
+      g.addColorStop(0, '#2a5fd0');
+      g.addColorStop(1, C.blue);
+      ctx.fillStyle = g;
+      ctx.fillText(line, cx, by);
+      ctx.restore();
+    });
+  }
+
+  // Polaroid com o print da página de doação (meta-batida.png).
+  const CROP = { sx: 478, sy: 88, sw: 712, sh: 627 };
+  const PM = 28, PW = 700, PIW = PW - PM * 2, PIH = Math.round(PIW * CROP.sh / CROP.sw), PH = PIH + PM + 92;
+  const PX = (W - PW) / 2, PY = 850;
+  function drawPolaroid(t) {
+    const f = prog(t, 2.35, 0.85);
+    if (f <= 0) return;
+    const e = backOut(f);
+    const settle = t > 3.2 ? Math.sin((t - 3.2) * 1.4) * 0.006 : 0;
+    const rot = (8 * (1 - e) - 3) * Math.PI / 180 + settle;
+    const dy = (1 - easeOut(f)) * 900;
+    const cx = PX + PW / 2, cy = PY + PH / 2 + dy;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(rot);
+    ctx.translate(-PW / 2, -PH / 2);
+    ctx.save();
+    ctx.shadowColor = 'rgba(169,95,208,.55)';
+    ctx.shadowBlur = 60;
+    ctx.shadowOffsetY = 14;
+    ctx.fillStyle = C.paper;
+    roundRect(0, 0, PW, PH, 14);
+    ctx.fill();
+    ctx.restore();
+
+    if (IMG.foto) {
+      ctx.save();
+      roundRect(PM, PM, PIW, PIH, 6);
+      ctx.clip();
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(PM, PM, PIW, PIH);
+      ctx.drawImage(IMG.foto, CROP.sx, CROP.sy, CROP.sw, CROP.sh, PM, PM, PIW, PIH);
+      ctx.restore();
+      ctx.strokeStyle = 'rgba(16,16,24,.12)';
+      ctx.lineWidth = 2;
+      roundRect(PM, PM, PIW, PIH, 6);
+      ctx.stroke();
+    }
+    ctx.font = font(800, 38);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = C.blue;
+    ctx.fillText('1.028 pontos · meta de 1.000', PW / 2, PH - 48);
+    ctx.font = font(600, 24);
+    ctx.fillStyle = C.purple;
+    ctx.fillText('obrigado de coração 💜', PW / 2, PH - 18);
+
+    // Fita adesiva no topo
+    ctx.save();
+    ctx.translate(PW / 2, 4);
+    ctx.rotate(-0.04);
+    ctx.fillStyle = 'rgba(226,176,255,.75)';
+    ctx.fillRect(-90, -24, 180, 48);
+    ctx.restore();
+    ctx.restore();
+  }
+
+  // Selo "100%" girando sobre o canto da polaroid.
+  function drawBadge(t) {
+    const f = prog(t, 3.0, 0.55);
+    if (f <= 0) return;
+    const s = backOut(f);
+    const x = PX + PW - 10, y = PY + 30, r = 112;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(s, s);
+    ctx.rotate(0.22 + Math.sin(t * 1.8) * 0.06);
+    // borda serrilhada
+    ctx.beginPath();
+    for (let i = 0; i < 48; i++) {
+      const a = (i / 48) * Math.PI * 2;
+      const rr = i % 2 ? r * 0.92 : r;
+      ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr);
+    }
+    ctx.closePath();
+    ctx.shadowColor = 'rgba(255,211,77,.6)';
+    ctx.shadowBlur = 30;
+    ctx.fillStyle = C.gold;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 0.78, 0, Math.PI * 2);
+    ctx.fillStyle = C.purpleDeep;
+    ctx.fill();
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = C.cyan;
+    ctx.stroke();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = C.white;
+    ctx.font = font(800, 46);
+    ctx.fillText('102,8%', 0, 10);
+    ctx.font = font(800, 20);
+    ctx.fillStyle = C.gold;
+    ctx.fillText('DA META', 0, 44);
+    ctx.restore();
+  }
+
+  function drawMessage(t) {
+    const rows = [
+      { at: 3.35, y: 1612, size: 48, weight: 800, text: '*Obrigado* a cada pessoa que doou!' },
+      { at: 3.55, y: 1668, size: 32, weight: 600, text: 'A campanha segue até 01/12. Bora ir *além*?' },
+    ];
+    for (const r of rows) {
+      const f = easeOut(prog(t, r.at, 0.6));
+      if (f <= 0) continue;
+      ctx.save();
+      ctx.globalAlpha = f;
+      ctx.translate(0, (1 - f) * 30);
+      ctx.shadowColor = 'rgba(0,0,0,.6)';
+      ctx.shadowBlur = 12;
+      richLine(r.text, W / 2, r.y, r.size, r.weight);
+      ctx.restore();
+    }
+  }
+
+  function drawFooter(t) {
+    const f = easeOut(prog(t, 3.8, 0.6));
+    if (f <= 0) return;
+    const x = 90, y = 1700, w = 900, h = 120, split = 640;
+    ctx.save();
+    ctx.globalAlpha = f;
+    ctx.translate(0, (1 - f) * 60);
+    ctx.save();
+    ctx.shadowColor = 'rgba(169,95,208,.45)';
+    ctx.shadowBlur = 36;
+    ctx.fillStyle = C.paper;
+    roundRect(x, y, w, h, 24);
+    ctx.fill();
+    ctx.restore();
+    ctx.save();
+    roundRect(x, y, w, h, 24);
+    ctx.clip();
+    const g = ctx.createLinearGradient(split, y, x + w, y + h);
+    g.addColorStop(0, C.blue);
+    g.addColorStop(1, '#0c2a63');
+    ctx.fillStyle = g;
+    ctx.fillRect(split, y, x + w - split, h);
+    ctx.fillStyle = C.purple;
+    ctx.fillRect(split, y, 7, h);
+    ctx.restore();
+
+    // QR code
+    if (QR) {
+      const size = h - 24, n = QR.length, cell = size / n, qx = x + 12, qy = y + 12;
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(qx, qy, size, size);
+      ctx.fillStyle = C.ink;
+      for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (QR[r][c]) ctx.fillRect(qx + c * cell, qy + r * cell, Math.ceil(cell), Math.ceil(cell));
+    }
+    const tx = x + h + 8;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = C.purple;
+    ctx.font = font(800, 20);
+    ctx.fillText('AINDA DÁ PARA DOAR', tx, y + 42);
+    ctx.fillStyle = C.blue;
+    ctx.font = font(800, 54);
+    ctx.fillText(LINK, tx, y + 98);
+
+    const cx = split + (x + w - split) / 2 + 4;
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(255,255,255,.82)';
+    ctx.font = font(700, 15);
+    ctx.fillText('EM PARCERIA COM', cx, y + 32);
+    if (IMG.adp) {
+      const lw = 200, lh = lw * (IMG.adp.height / IMG.adp.width);
+      ctx.drawImage(IMG.adp, cx - lw / 2, y + 44, lw, lh);
+    }
+    ctx.restore();
+  }
+
+  function frame(t) {
+    ctx.drawImage(bg, 0, 0);
+    drawTwinkles(t);
+    drawCubeSat(150 + Math.sin(t * 0.9) * 10, 1530 + Math.cos(t * 0.8) * 14, 46, -0.35 + Math.sin(t * 0.6) * 0.08);
+    drawCubeSat(950 + Math.cos(t * 0.7) * 10, 820 + Math.sin(t * 1.1) * 12, 34, 0.3 + Math.cos(t * 0.5) * 0.08);
+    drawHeader(t);
+    drawBar(t);
+    // clarão no momento da meta
+    if (t >= BURST && t < BURST + 0.8) {
+      const f = prog(t, BURST, 0.8);
+      ctx.save();
+      const g = ctx.createRadialGradient(540, 620, 0, 540, 620, 900);
+      g.addColorStop(0, `rgba(226,176,255,${0.55 * (1 - f)})`);
+      g.addColorStop(1, 'rgba(226,176,255,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+      ctx.restore();
+    }
+    drawTitle(t);
+    drawPolaroid(t);
+    drawBadge(t);
+    drawMessage(t);
+    drawFooter(t);
+    drawConfetti(t);
+  }
+
+  async function prepare() {
+    await Promise.all([600, 700, 800].map((w) => document.fonts.load(`${w} 40px Poppins`)));
+    const [polisat, adp, foto] = await Promise.all([
+      loadImage('../assets/logos/polisat-branco.svg'),
+      loadImage('../assets/logos/adp.svg'),
+      loadImage('../meta-batida.png'),
+    ]);
+    IMG = { polisat, adp, foto };
+    if (typeof window.qrcode === 'function') {
+      const qr = window.qrcode(0, 'M');
+      qr.addData('https://doa.re/RzAT');
+      qr.make();
+      const n = qr.getModuleCount();
+      QR = Array.from({ length: n }, (_, r) => Array.from({ length: n }, (_, c) => qr.isDark(r, c)));
+    }
+  }
+
+  const ready = prepare();
+  window.Story = { W, H, D, ready, frame, canvas };
+
+  // Reprodução em loop no navegador (desligada com ?export).
+  if (!new URLSearchParams(location.search).has('export')) {
+    ready.then(() => {
+      let start = performance.now();
+      canvas.addEventListener('click', () => { start = performance.now(); });
+      const loop = (now) => {
+        const t = ((now - start) / 1000) % (D + 1.2);
+        frame(Math.min(t, D));
+        requestAnimationFrame(loop);
+      };
+      requestAnimationFrame(loop);
+    });
+  }
+})();
+</script>
+</body>
+</html>
