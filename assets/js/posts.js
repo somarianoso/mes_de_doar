@@ -121,21 +121,24 @@ Stand, montagem, lançamento e muita equipe. Experiências assim só acontecem c
 ${tags}`,
     },
     {
-      data: '2026-11-16', tema: 'Para onde vai sua doação', template: 'lista', fundo: 'nebulosa',
+      data: '2026-11-16', tema: 'Metade do desafio', template: 'numero', fundo: 'nebulosa',
       campos: {
-        titulo: 'PARA ONDE VAI\nSUA DOAÇÃO?',
-        itens: 'Componentes e sensores | HARDWARE\nProtótipos e testes | BANCADA\nViagens para competições | MISSÕES\nFerramentas e materiais | LAB',
-        rodape: '*Cada real* vira engenharia.',
+        antes: 'Chegamos na',
+        numero: 'METADE',
+        depois: 'do *Mês do Doar*',
+        texto: 'Já batemos a meta de *1.000 pontos*, e ainda faltam *15 dias* até 01/12. Cada nova doação vira *peças, testes e missões*.',
       },
-      whatsapp: `💡 *Para onde vai a sua doação?*
+      whatsapp: `🛰️ *Chegamos na metade do Mês do Doar!*
 
-No *PoliSat*, ela vira componentes e sensores, protótipos e testes em bancada, viagens para competições e ferramentas para o laboratório.
+E que metade: graças a vocês, o *PoliSat* já bateu a meta de *1.000 pontos* 🎉 Muito obrigado a todo mundo que doou e compartilhou!
 
-Ou seja: cada real vira engenharia de verdade, feita por estudantes da Poli 🛰️
-👉 ${LINK}`,
-      legenda: `Para onde vai sua doação? 💡
+Mas ainda faltam *15 dias* até o Dia de Doar (01/12), e cada nova doação vira componentes, testes e missões feitas por estudantes da Poli. Bora ir além da meta? 🚀
+👉 ${LINK}
 
-Componentes, testes, competições e laboratório. No PoliSat, cada real vira engenharia.
+Se puder, encaminha para mais alguém 💙💜`,
+      legenda: `Metade do caminho! 🛰️
+
+Já batemos a meta de 1.000 pontos, e ainda faltam 15 dias de Mês do Doar. Obrigado a todo mundo que apoiou até aqui! Agora é ir além: cada nova doação vira peças, testes e missões do PoliSat.
 
 💜 Doe: doa.re/RzAT
 

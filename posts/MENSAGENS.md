@@ -137,27 +137,29 @@ Stand, montagem, lançamento e muita equipe. Experiências assim só acontecem c
 #MêsDoDoar #DiaDeDoar #PoliSat #AmigosDaPoli #PoliUSP #EngenhariaEspacial
 ```
 
-## 16/11/2026 · Para onde vai sua doação
+## 16/11/2026 · Metade do desafio
 
-![Para onde vai sua doação](2026-11-16-para-onde-vai-sua-doacao.png)
+![Metade do desafio](2026-11-16-metade-do-desafio.png)
 
 **WhatsApp**
 
 ```
-💡 *Para onde vai a sua doação?*
+🛰️ *Chegamos na metade do Mês do Doar!*
 
-No *PoliSat*, ela vira componentes e sensores, protótipos e testes em bancada, viagens para competições e ferramentas para o laboratório.
+E que metade: graças a vocês, o *PoliSat* já bateu a meta de *1.000 pontos* 🎉 Muito obrigado a todo mundo que doou e compartilhou!
 
-Ou seja: cada real vira engenharia de verdade, feita por estudantes da Poli 🛰️
+Mas ainda faltam *15 dias* até o Dia de Doar (01/12), e cada nova doação vira componentes, testes e missões feitas por estudantes da Poli. Bora ir além da meta? 🚀
 👉 https://doa.re/RzAT
+
+Se puder, encaminha para mais alguém 💙💜
 ```
 
 **Instagram**
 
 ```
-Para onde vai sua doação? 💡
+Metade do caminho! 🛰️
 
-Componentes, testes, competições e laboratório. No PoliSat, cada real vira engenharia.
+Já batemos a meta de 1.000 pontos, e ainda faltam 15 dias de Mês do Doar. Obrigado a todo mundo que apoiou até aqui! Agora é ir além: cada nova doação vira peças, testes e missões do PoliSat.
 
 💜 Doe: doa.re/RzAT
 
