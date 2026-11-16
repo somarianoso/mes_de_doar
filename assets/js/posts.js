@@ -123,22 +123,18 @@ ${tags}`,
     {
       data: '2026-11-16', tema: 'Metade do desafio', template: 'numero', fundo: 'nebulosa',
       campos: {
-        antes: 'Chegamos na',
+        antes: 'Estamos na',
         numero: 'METADE',
         depois: 'do *Mês do Doar*',
-        texto: 'Já batemos a meta de *1.000 pontos*, e ainda faltam *15 dias* até 01/12. Cada nova doação vira *peças, testes e missões*.',
+        texto: 'Bora para a *segunda metade*!',
       },
       whatsapp: `🛰️ *Chegamos na metade do Mês do Doar!*
 
-E que metade: graças a vocês, o *PoliSat* já bateu a meta de *1.000 pontos* 🎉 Muito obrigado a todo mundo que doou e compartilhou!
+Bora para a segunda metade: ainda dá tempo de apoiar o *PoliSat* 💙💜
+👉 ${LINK}`,
+      legenda: `Metade do Mês do Doar! 🛰️
 
-Mas ainda faltam *15 dias* até o Dia de Doar (01/12), e cada nova doação vira componentes, testes e missões feitas por estudantes da Poli. Bora ir além da meta? 🚀
-👉 ${LINK}
-
-Se puder, encaminha para mais alguém 💙💜`,
-      legenda: `Metade do caminho! 🛰️
-
-Já batemos a meta de 1.000 pontos, e ainda faltam 15 dias de Mês do Doar. Obrigado a todo mundo que apoiou até aqui! Agora é ir além: cada nova doação vira peças, testes e missões do PoliSat.
+Bora para a segunda metade com o PoliSat.
 
 💜 Doe: doa.re/RzAT
 
